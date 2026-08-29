@@ -1,0 +1,73 @@
+name: Wire live ISS telemetry
+on:
+  push:
+    paths:
+      - '.github/workflows/wire-live-iss.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inject resilient telemetry bridge
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- LIVE-ISS-BRIDGE -->'
+          if marker in s:
+              print('Bridge already installed')
+              raise SystemExit(0)
+          bridge=r'''<!-- LIVE-ISS-BRIDGE -->
+<script>
+(()=>{
+  const API='https://api.wheretheiss.at/v1/satellites/25544';
+  const $=id=>document.getElementById(id);
+  let last=null,fail=0;
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+  const fmtLat=v=>`${Math.abs(v).toFixed(2)}° ${v>=0?'N':'S'}`;
+  const fmtLon=v=>`${Math.abs(v).toFixed(2)}° ${v>=0?'E':'W'}`;
+  function apply(d){
+    last=d; fail=0;
+    set('alt',`${Number(d.altitude).toFixed(1)} km`);
+    set('vel',`${Math.round(Number(d.velocity)).toLocaleString()} km/h`);
+    set('lat',fmtLat(Number(d.latitude)));
+    set('lon',fmtLon(Number(d.longitude)));
+    set('period','~92.7 min');
+    set('trackState','LIVE');
+    set('light','LIVE');
+    set('where',`${Number(d.latitude).toFixed(1)}° · ${Number(d.longitude).toFixed(1)}°`);
+    set('utc',`UTC ${new Date().toISOString().replace('T',' ').slice(0,19)}`);
+    const feed=$('feed'); if(feed){feed.textContent='LIVE';feed.classList.remove('bad');}
+    const dot=$('dot'); if(dot){dot.style.left=`${(Number(d.longitude)+180)/360*100}%`;dot.style.top=`${(90-Number(d.latitude))/180*100}%`;}
+    set('orbit','LIVE');
+    window.dispatchEvent(new CustomEvent('iss-live-position',{detail:d}));
+  }
+  function degraded(){
+    fail++;
+    const feed=$('feed');if(feed){feed.textContent=last?'DEGRADED':'RETRYING';feed.classList.toggle('bad',!last);}
+    set('trackState',last?'LAST VALID':'RETRYING');
+    set('light',last?'HOLD':'—');
+  }
+  async function poll(){
+    try{const c=new AbortController();const t=setTimeout(()=>c.abort(),7000);const r=await fetch(API,{cache:'no-store',signal:c.signal});clearTimeout(t);if(!r.ok)throw Error(r.status);apply(await r.json());}
+    catch(e){degraded();}
+  }
+  poll();setInterval(poll,5000);
+  setInterval(()=>{if(last)set('age',`${Math.max(0,Math.round((Date.now()-new Date(last.timestamp*1000))/1000))} s`);},1000);
+})();
+</script>'''
+          s=s.replace('</body>',bridge+'\n</body>')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit bridge
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix live ISS telemetry bridge'
+          git push
