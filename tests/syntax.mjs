@@ -3,10 +3,11 @@ import { readFileSync } from 'node:fs';
 
 const files = [
   'tracker.js',
-  'cinematic-earth.js',
+  'cesium-earth.js',
+  'gaussian-splats.js',
+  'ambient-piano.js',
   'earth-imagery.js',
-  'goes-loop.js',
-  'ambient-piano.js'
+  'goes-loop.js'
 ];
 
 let failed = false;
@@ -23,6 +24,7 @@ for (const file of files) {
 
 const html = readFileSync('index.html', 'utf8');
 const required = [
+  'Cesium.js',
   'cesium-earth.js',
   'tracker.js',
   'ambient-piano.js',
@@ -38,14 +40,15 @@ for (const token of required) {
   if (!ok) failed = true;
 }
 
-if (html.includes('NaturalEarthII')) {
-  console.error('FAIL: index.html still contains a NaturalEarthII runtime dependency');
-  failed = true;
-}
-
-if (html.includes('sen.com') || html.includes('youtube.com/embed')) {
-  console.error('FAIL: broken third-party iframe source remains in index.html');
-  failed = true;
+for (const bad of [
+  'NaturalEarthII',
+  'ImageryLayer.fromProviderAsync(Cesium.IonImageryProvider.fromAssetId(2)).then',
+  'youtube.com/embed',
+  'sen.com/'
+]) {
+  const ok = !html.includes(bad) && !readFileSync('cesium-earth.js','utf8').includes(bad);
+  console.log(`${ok ? 'PASS' : 'FAIL'} removed broken dependency: ${bad}`);
+  if (!ok) failed = true;
 }
 
 process.exitCode = failed ? 1 : 0;
