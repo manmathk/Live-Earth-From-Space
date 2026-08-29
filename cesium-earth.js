@@ -1,4 +1,4 @@
-/* CesiumJS cinematic Earth + ISS orbit layer. */
+/* CesiumJS globe + ISS orbit layer + on-demand Gaussian splat LOD showcase. */
 (() => {
   const Cesium = window.Cesium;
   if (!Cesium) { console.error('CesiumJS failed to load.'); return; }
@@ -21,29 +21,25 @@
   scene.globe.dynamicAtmosphereLighting = true;
   scene.globe.dynamicAtmosphereLightingFromSun = true;
   scene.globe.showGroundAtmosphere = true;
-  scene.globe.atmosphereLightIntensity = 8.0;
-  scene.globe.lambertDiffuseMultiplier = 1.05;
-  scene.globe.nightFadeOutDistance = 0.8 * Math.PI * Cesium.Ellipsoid.WGS84.minimumRadius;
-  scene.globe.nightFadeInDistance = 3.0 * Math.PI * Cesium.Ellipsoid.WGS84.minimumRadius;
+  scene.globe.atmosphereLightIntensity = 5.5;
+  scene.globe.lambertDiffuseMultiplier = 1.0;
+  scene.globe.nightFadeOutDistance = 0.7 * Math.PI * Cesium.Ellipsoid.WGS84.minimumRadius;
+  scene.globe.nightFadeInDistance = 2.6 * Math.PI * Cesium.Ellipsoid.WGS84.minimumRadius;
   scene.skyAtmosphere = new Cesium.SkyAtmosphere();
   scene.skyAtmosphere.show = true;
-  scene.skyAtmosphere.atmosphereLightIntensity = 35.0;
-  scene.skyAtmosphere.mieCoefficient = 21e-6;
-  scene.skyAtmosphere.mieAnisotropy = 0.76;
+  scene.skyAtmosphere.atmosphereLightIntensity = 20.0;
+  scene.skyAtmosphere.mieCoefficient = 18e-6;
+  scene.skyAtmosphere.mieAnisotropy = 0.72;
   scene.fog.enabled = false;
   scene.highDynamicRange = true;
 
-  // The previous configuration requested Cesium's own CDN-hosted asset path.
-  // That CDN does not expose permissive CORS headers for GitHub Pages.
-  // Use the same Natural Earth II tile set through UNPKG, which supports
-  // cross-origin requests and keeps the app token-free.
-  const naturalEarth = new Cesium.UrlTemplateImageryProvider({
-    url: 'https://unpkg.com/cesium@1.144.0/Build/Cesium/Assets/Textures/NaturalEarthII/{z}/{x}/{reverseY}.jpg',
-    tilingScheme: new Cesium.GeographicTilingScheme(),
-    maximumLevel: 2,
-    credit: new Cesium.Credit('Natural Earth II / CesiumJS')
-  });
-  scene.globe.imageryLayers.addImageryProvider(naturalEarth);
+  // Use Cesium ion imagery instead of Cesium CDN Natural Earth tiles.
+  // Asset 2 is Bing Maps Aerial in Cesium's default asset set.
+  if (Cesium.IonImageryProvider?.fromAssetId && Cesium.ImageryLayer?.fromProviderAsync) {
+    Cesium.ImageryLayer.fromProviderAsync(Cesium.IonImageryProvider.fromAssetId(2))
+      .then(layer => scene.globe.imageryLayers.add(layer))
+      .catch(error => console.warn('Ion imagery unavailable; continuing with globe only.', error));
+  }
 
   const iss = viewer.entities.add({
     id: 'ISS-25544', name: 'International Space Station · ZARYA',
@@ -71,8 +67,8 @@
     id: 'ISS-25544-HALO', position: iss.position,
     ellipse: {
       semiMajorAxis: 42000, semiMinorAxis: 42000,
-      material: new Cesium.ColorMaterialProperty(new Cesium.Color(.35,.92,1,.12)),
-      outline: true, outlineColor: Cesium.Color.CYAN.withAlpha(.55), outlineWidth: 1,
+      material: new Cesium.ColorMaterialProperty(new Cesium.Color(.35,.92,1,.10)),
+      outline: true, outlineColor: Cesium.Color.CYAN.withAlpha(.5), outlineWidth: 1,
       height: 420000, classificationType: Cesium.ClassificationType.NONE
     }
   });
@@ -85,9 +81,10 @@
       clampToGround: false, arcType: Cesium.ArcType.NONE
     }
   });
+
   const groundTrack = viewer.entities.add({
     id: 'ISS-GROUND-TRACK', name: 'ISS ground track',
-    polyline: {positions: [], width: 1.5, material: Cesium.Color.CYAN.withAlpha(.25), clampToGround: true}
+    polyline: {positions: [], width: 1.5, material: Cesium.Color.CYAN.withAlpha(.22), clampToGround: true}
   });
 
   let autoOrbit = true, followISS = false, heading = 5.1, lastManual = 0;
@@ -125,4 +122,11 @@
     if(autoOrbit&&!followISS&&now-lastManual>250){heading+=.000085;viewer.camera.lookAt(Cesium.Cartesian3.ZERO,new Cesium.HeadingPitchRange(heading,-.22,14500000));}
   });
   window.CesiumEarthViewer=viewer;
+
+  // Gaussian-splat LOD showcase is injected after the base Cesium scene exists.
+  const script=document.createElement('script');
+  script.src='gaussian-splats.js';
+  script.onload=()=>console.info('Gaussian LOD module ready');
+  script.onerror=()=>console.warn('Gaussian LOD module failed to load');
+  document.body.appendChild(script);
 })();
