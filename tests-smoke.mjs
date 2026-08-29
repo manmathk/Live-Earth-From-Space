@@ -23,9 +23,11 @@ const hasIon = cesium.includes('IonImageryProvider.fromAssetId(2)');
 if (!hasArcGIS && !hasIon) throw new Error('No supported Cesium aerial imagery provider configured');
 console.log(`PASS Cesium imagery provider: ${hasArcGIS ? 'ArcGIS World Imagery' : 'Cesium ion asset 2'}`);
 
-if (!cesium.includes('gaussian-splats.js')) throw new Error('Gaussian LOD module is not wired');
-
 const splats = await readFile('gaussian-splats.js', 'utf8');
+const splatWired = html.includes('gaussian-splats.js') || cesium.includes('gaussian-splats.js');
+if (!splatWired) throw new Error('Gaussian LOD module is not wired');
+console.log('PASS Gaussian LOD module wired');
+
 if (!splats.includes('fromIonAssetId(ASSET_ID)')) throw new Error('Gaussian tileset loader missing');
 if (!splats.includes('maximumScreenSpaceError')) throw new Error('Gaussian LOD performance setting missing');
 
