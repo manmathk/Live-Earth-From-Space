@@ -53,5 +53,6 @@ auto.onclick=()=>{auto=!auto;auto.classList.toggle('on',auto)};home.onclick=()=>
 function stars(){const c=document.getElementById('stars'),x=c.getContext('2d');c.width=innerWidth*devicePixelRatio;c.height=innerHeight*devicePixelRatio;x.scale(devicePixelRatio,devicePixelRatio);x.fillStyle='#010307';x.fillRect(0,0,innerWidth,innerHeight);for(let i=0;i<520;i++){x.globalAlpha=.12+Math.random()*.7;x.fillStyle='#dff7ff';x.beginPath();x.arc(Math.random()*innerWidth,Math.random()*innerHeight,Math.random()*1.3+.1,0,7);x.fill()}}stars();
 function loop(){requestAnimationFrame(loop);if(auto&&!drag&&!follow)world.rotation.y+=.00042;clouds.rotation.y+=.0003;camera.position.z+=(zoom-camera.position.z)*.08;document.getElementById('utc').textContent='UTC '+new Date().toISOString().replace('T',' ').slice(0,19);renderer.render(scene,camera)}loop();addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();stars()});
 </script>
+<script src="ambient-piano.js"></script>
 </body>
 </html>
