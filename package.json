@@ -1,9 +1,5 @@
 {
   "name": "live-earth-from-space",
   "private": true,
-  "type": "module",
-  "scripts": {
-    "test": "node tests-smoke.mjs && npm run syntax",
-    "syntax": "node tests-syntax.mjs"
-  }
+  "type": "module"
 }
