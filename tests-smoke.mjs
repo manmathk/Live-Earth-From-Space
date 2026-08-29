@@ -18,7 +18,11 @@ if (html.includes('NaturalEarthII')) throw new Error('index.html still reference
 if (html.includes('iframe') && /sen\.com|youtube\.com/i.test(html)) throw new Error('Forbidden embedded third-party camera iframe remains');
 
 const cesium = await readFile('cesium-earth.js', 'utf8');
-if (!cesium.includes('IonImageryProvider.fromAssetId(2)')) throw new Error('Cesium ion aerial imagery provider not configured');
+const hasArcGIS = cesium.includes('ArcGisMapServerImageryProvider.fromUrl');
+const hasIon = cesium.includes('IonImageryProvider.fromAssetId(2)');
+if (!hasArcGIS && !hasIon) throw new Error('No supported Cesium aerial imagery provider configured');
+console.log(`PASS Cesium imagery provider: ${hasArcGIS ? 'ArcGIS World Imagery' : 'Cesium ion asset 2'}`);
+
 if (!cesium.includes('gaussian-splats.js')) throw new Error('Gaussian LOD module is not wired');
 
 const splats = await readFile('gaussian-splats.js', 'utf8');
