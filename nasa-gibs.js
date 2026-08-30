@@ -1,18 +1,19 @@
-/* NASA GIBS tiled imagery controller.
-   Uses the documented REST WMTS tile pattern because it is designed for interactive maps.
-   A stable ArcGIS layer remains underneath as a visual fallback/base. */
+/* NASA GIBS cinematic Earth imagery.
+   Uses one WMS-rendered global image for the main visible Earth layer.
+   A single top-level image avoids the curved tile-gap artifacts that are
+   unacceptable in a cinematic broadcast view. */
 (() => {
   const Cesium = window.Cesium;
   const viewer = window.CesiumEarthViewer;
   if (!Cesium || !viewer) return;
 
-  const GIBS_ROOT = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best';
-  const TILE_SET = '250m';
+  const WMS = 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi';
+  const WORLD = Cesium.Rectangle.fromDegrees(-180, -90, 180, 90);
   const layers = {
-    visible: { label: 'VISIBLE EARTH', layer: 'MODIS_Terra_CorrectedReflectance_TrueColor', format: 'jpg', alpha: 1.0 },
-    clouds: { label: 'CLOUD FRACTION', layer: 'MODIS_Cloud_Fraction_Day', format: 'jpg', alpha: 0.72 },
-    temp: { label: 'LAND TEMPERATURE', layer: 'MODIS_Terra_Land_Surface_Temp_Day', format: 'png', alpha: 0.68 },
-    night: { label: 'NIGHT LIGHTS', layer: 'VIIRS_Black_Marble', format: 'jpg', alpha: 0.78 }
+    visible: { label: 'VISIBLE EARTH', layer: 'MODIS_Terra_CorrectedReflectance_TrueColor', format: 'image/jpeg', alpha: 1.0 },
+    clouds: { label: 'CLOUD FRACTION', layer: 'MODIS_Cloud_Fraction_Day', format: 'image/png', alpha: 0.72 },
+    temp: { label: 'LAND TEMPERATURE', layer: 'MODIS_Terra_Land_Surface_Temp_Day', format: 'image/png', alpha: 0.68 },
+    night: { label: 'NIGHT LIGHTS', layer: 'VIIRS_Black_Marble', format: 'image/jpeg', alpha: 0.78 }
   };
 
   let activeId = 'visible';
@@ -31,7 +32,7 @@
 
   const panel = document.createElement('section');
   panel.className = 'gibs-panel';
-  panel.innerHTML = `<div class="gibs-head"><span>NASA EARTH DATA</span><span>● GIBS ONLINE</span></div><div class="gibs-grid"></div><div class="gibs-meta">LAYER <b id="gibsLayer">VISIBLE EARTH</b><br>OBSERVATION DATE <b id="gibsDate">—</b><br>RENDER <b>WMTS / EPSG:4326</b></div>`;
+  panel.innerHTML = `<div class="gibs-head"><span>NASA EARTH DATA</span><span>● GIBS ONLINE</span></div><div class="gibs-grid"></div><div class="gibs-meta">LAYER <b id="gibsLayer">VISIBLE EARTH</b><br>OBSERVATION DATE <b id="gibsDate">—</b><br>RENDER <b>SINGLE WORLD IMAGE</b></div>`;
   document.body.appendChild(panel);
 
   const grid = panel.querySelector('.gibs-grid');
@@ -49,26 +50,32 @@
     return d.toISOString().slice(0, 10);
   }
 
-  function providerFor(cfg, date) {
-    const template = `${GIBS_ROOT}/${cfg.layer}/default/${date}/${TILE_SET}/{z}/{y}/{x}.${cfg.format}`;
-    return new Cesium.UrlTemplateImageryProvider({
-      url: template,
-      tilingScheme: new Cesium.GeographicTilingScheme({ ellipsoid: Cesium.Ellipsoid.WGS84 }),
-      tileWidth: 256,
-      tileHeight: 256,
-      minimumLevel: 0,
-      maximumLevel: 7,
-      hasAlphaChannel: cfg.format === 'png',
-      enablePickFeatures: false,
-      credit: `NASA GIBS · ${cfg.layer}`
+  function wmsUrl(cfg, date) {
+    const p = new URLSearchParams({
+      service: 'WMS',
+      version: '1.1.1',
+      request: 'GetMap',
+      layers: cfg.layer,
+      styles: '',
+      srs: 'EPSG:4326',
+      bbox: '-180,-90,180,90',
+      width: '2048',
+      height: '1024',
+      format: cfg.format,
+      transparent: cfg.format === 'image/png' ? 'true' : 'false',
+      time: date
     });
+    return `${WMS}?${p.toString()}`;
   }
 
-  async function verifyProvider(provider) {
-    // Force a real low-level tile request before replacing the currently visible layer.
-    const image = await provider.requestImage(0, 0, 0, undefined);
-    if (!image) throw new Error('GIBS tile unavailable');
-    return true;
+  async function buildLayer(id, date) {
+    const cfg = layers[id];
+    const url = wmsUrl(cfg, date);
+    const provider = await Cesium.SingleTileImageryProvider.fromUrl(url, {
+      rectangle: WORLD,
+      credit: `NASA GIBS · ${cfg.layer}`
+    });
+    return new Cesium.ImageryLayer(provider, { alpha: cfg.alpha, show: true });
   }
 
   async function setLayer(id) {
@@ -76,9 +83,7 @@
     for (const daysAgo of [0, 1, 2, 3]) {
       const date = dateString(daysAgo);
       try {
-        const provider = providerFor(cfg, date);
-        await verifyProvider(provider);
-        const layer = new Cesium.ImageryLayer(provider, { alpha: cfg.alpha, show: true });
+        const layer = await buildLayer(id, date);
         if (activeLayer) viewer.imageryLayers.remove(activeLayer, true);
         activeLayer = viewer.imageryLayers.add(layer, 0);
         activeId = id;
