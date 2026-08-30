@@ -31,13 +31,13 @@ jobs:
             -o /tmp/resource.tle
           python3 - <<'PY'
           from pathlib import Path
-          wanted = {'TERRA', 'AQUA', 'LANDSAT 9', 'SENTINEL-1A'}
+          wanted = {'TERRA', 'AQUA', 'LANDSAT 9', 'SENTINEL-1A', 'GPM'}
           lines = Path('/tmp/resource.tle').read_text().splitlines()
           out=[]
           for i, line in enumerate(lines):
               if line.strip() in wanted and i + 2 < len(lines) and lines[i+1].startswith('1 ') and lines[i+2].startswith('2 '):
                   out.extend([line.strip(), lines[i+1], lines[i+2]])
-          if len(out) < 12:
+          if len(out) < 15:
               raise SystemExit('Expected Earth-resource TLEs were not found')
           Path('data/missions.tle').write_text('\n'.join(out) + '\n')
           PY
