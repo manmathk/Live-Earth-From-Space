@@ -21,9 +21,14 @@
   .info b{font-size:10px;letter-spacing:.1em}.info span{display:block;margin-top:4px;font-size:8px;color:#aab8c0;line-height:1.4}
   .open{pointer-events:auto;text-decoration:none;color:#d8edf3;border:1px solid rgba(116,237,255,.35);background:rgba(5,14,20,.8);padding:9px 11px;border-radius:4px;font:800 8px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
   .open:hover{color:#74edff;border-color:#74edff88}
+  .music{position:fixed;z-index:30;right:18px;bottom:72px;width:42px;height:42px;border-radius:21px;border:1px solid rgba(255,255,255,.18);background:rgba(4,10,17,.86);color:#dce8ec;font-size:17px;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 12px 35px #0009;pointer-events:auto}
+  .music:hover{border-color:#74edff66;color:#74edff}
+  .music.on{color:#74edff;border-color:#74edff66;box-shadow:0 0 22px rgba(116,237,255,.16),0 12px 35px #0009}
+  .music::after{content:"BACKGROUND MUSIC";position:absolute;right:50px;top:50%;transform:translateY(-50%);white-space:nowrap;font:800 7px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;color:#b9c7ce;opacity:0;transition:opacity .2s;pointer-events:none;text-shadow:0 2px 10px #000}
+  .music:hover::after{opacity:.9}
   .error{position:fixed;z-index:20;left:50%;top:50%;transform:translate(-50%,-50%);display:none;max-width:520px;padding:16px;border:1px solid rgba(255,90,110,.3);border-radius:6px;background:rgba(18,5,9,.9);backdrop-filter:blur(12px);text-align:center;font-size:12px;line-height:1.5}
   .error b{display:block;margin-bottom:6px}
-  @media(max-width:700px){.top{padding:11px}.brand{font-size:15px}.sub{font-size:6px}.bottom{left:10px;right:10px;bottom:10px}.info{max-width:70%}.info span{font-size:7px}.open{padding:8px 9px;font-size:7px}}
+  @media(max-width:700px){.top{padding:11px}.brand{font-size:15px}.sub{font-size:6px}.bottom{left:10px;right:10px;bottom:10px}.info{max-width:70%}.info span{font-size:7px}.open{padding:8px 9px;font-size:7px}.music{right:10px;bottom:62px}}
 </style>
 </head>
 <body>
@@ -39,12 +44,25 @@
   <div class="info"><b>CYGNSS-4</b><span>NASA Eyes interactive spacecraft visualization. The Earth view is loaded directly from NASA Eyes inside the frame.</span></div>
   <a class="open" href="https://eyes.nasa.gov/apps/earth/#/satellites/cygnss-4" target="_blank" rel="noopener">OPEN NASA EYES ↗</a>
 </footer>
+<button class="music" id="music" aria-label="Toggle background music" title="Toggle background music">♫</button>
 <div class="error" id="error"><b>NASA Eyes could not be embedded.</b><span>This can happen when the NASA Eyes site or your browser blocks framing. Use “OPEN NASA EYES” above to launch the original interactive view.</span></div>
+<script src="ambient-piano.js?v=20260904-1"></script>
 <script>
 const frame=document.getElementById('eyes');
 let loaded=false;
 frame.addEventListener('load',()=>{loaded=true;});
 setTimeout(()=>{if(!loaded)document.getElementById('error').style.display='block';},8000);
+const music=document.getElementById('music');
+function syncMusic(){
+  const playing=!!window.ISSBackgroundMusic?.isPlaying?.();
+  music.textContent=playing?'⏸':'♫';
+  music.classList.toggle('on',playing);
+}
+music.addEventListener('click',()=>{
+  if(window.ISSBackgroundMusic?.toggle) window.ISSBackgroundMusic.toggle();
+  setTimeout(syncMusic,120);
+});
+window.addEventListener('DOMContentLoaded',()=>setTimeout(syncMusic,200));
 </script>
 </body>
 </html>
