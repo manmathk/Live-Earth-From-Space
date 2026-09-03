@@ -18,6 +18,11 @@
     .iframe-wrap{width:100%;display:block;position:relative;padding-top:56.25%;overflow:hidden;border-radius:6px}
     .iframe-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
     .note{font-size:13px;color:#9fb0bb;margin-top:8px}
+
+    /* small play/music button */
+    #musicBtn{position:fixed;right:16px;top:16px;z-index:80;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,0.02);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
+    #musicBtn.on{background:linear-gradient(90deg,rgba(116,237,255,.12),rgba(94,240,166,.08));color:#0b0f12}
+
     @media(max-width:640px){.brand{font-size:16px}.card{padding:8px}}
   </style>
 </head>
@@ -38,5 +43,34 @@
       </div>
     </main>
   </div>
+
+  <!-- Small play/music button (ambient piano will bind to #musicBtn if present) -->
+  <button id="musicBtn" aria-label="Toggle background music" title="Toggle background music">♪</button>
+
+  <script src="ambient-piano.js"></script>
+  <script>
+    // Keep the button label in sync with the ambient music state.
+    function updateMusicBtn(){
+      const btn = document.getElementById('musicBtn');
+      if(!btn) return;
+      if(window.ISSBackgroundMusic && typeof window.ISSBackgroundMusic.isPlaying === 'function'){
+        const playing = window.ISSBackgroundMusic.isPlaying();
+        btn.textContent = playing ? '⏸' : '♪';
+        btn.classList.toggle('on', playing);
+      }
+    }
+
+    // After ambient-piano binds to #musicBtn it will set onclick; also add our listener to update UI.
+    document.getElementById('musicBtn').addEventListener('click',()=>{
+      // ambient-piano.toggle will be called (it binds to the element). Wait a tick and then update the icon.
+      setTimeout(updateMusicBtn, 120);
+    });
+
+    // Ensure correct state on load.
+    window.addEventListener('DOMContentLoaded',()=>{
+      // Small delay in case ambient-piano initializes after DOMContentLoaded.
+      setTimeout(updateMusicBtn, 200);
+    });
+  </script>
 </body>
 </html>
