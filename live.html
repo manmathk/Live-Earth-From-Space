@@ -5,21 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#02060a">
   <title>Live Stream · Earth Observatory</title>
-  <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.144/Build/Cesium/Widgets/widgets.css">
   <style>
-    :root{--white:#f4f8fb;--line:rgba(255,255,255,.11);--panel:rgba(3,9,15,.88);--cyan:#74edff;--green:#5ef0a6}
+    :root{--white:#f4f8fb;--muted:#91a0aa;--line:rgba(255,255,255,.11);--panel:rgba(3,9,15,.90);--cyan:#74edff;--green:#5ef0a6}
+    *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:#000;color:var(--white);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{overflow-x:hidden}
     .container{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:28px}
-    header{width:100%;max-width:1100px;display:flex;justify-content:space-between;align-items:center;color:var(--white);margin-bottom:18px}
-    .brand{font-weight:900;font-size:22px;letter-spacing:-.03em}.sub{font-size:8px;letter-spacing:.15em;color:#9fb0bb}
-    .card{background:linear-gradient(145deg,rgba(7,16,23,.92),rgba(1,6,11,.76));border:1px solid var(--line);border-radius:8px;padding:12px;width:100%;max-width:1100px;box-shadow:0 18px 55px rgba(0,0,0,.45)}
-    .livestream-wrap{display:flex;flex-direction:column;gap:12px}.head{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:11px;letter-spacing:.08em}.state{color:var(--green);font-size:9px}
-    .iframe-wrap{width:100%;display:block;position:relative;padding-top:56.25%;overflow:hidden;border-radius:6px;background:#02060a;box-shadow:0 0 0 1px rgba(116,237,255,.08) inset}
-    .iframe-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
-    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.note{font-size:11px;color:#8fa0aa}.actions{display:flex;gap:7px}.actions a{display:inline-flex;align-items:center;justify-content:center;padding:8px 10px;border:1px solid var(--line);border-radius:4px;color:#c9d5db;text-decoration:none;font-size:9px;font-weight:800;letter-spacing:.06em;background:#ffffff04}.actions a:hover{color:var(--cyan);border-color:#74edff55}
-    #musicBtn{position:fixed;right:16px;top:16px;z-index:80;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,0.02);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
-    #musicBtn.on{background:linear-gradient(90deg,rgba(116,237,255,.12),rgba(94,240,166,.08));color:#dffcff}
-    @media(max-width:640px){.container{padding:12px}.brand{font-size:16px}.sub{display:none}.card{padding:8px}.toolbar{align-items:flex-start}.note{font-size:10px}.actions a{padding:7px 8px}}
+    header{width:100%;max-width:1100px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .brand{font-weight:950;font-size:22px;letter-spacing:-.035em}.sub{font-size:8px;letter-spacing:.16em;color:#91a4af}
+    .card{width:100%;max-width:1100px;background:linear-gradient(145deg,rgba(7,16,23,.92),rgba(1,6,11,.78));border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.50)}
+    .head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;font-weight:900;font-size:12px;letter-spacing:.1em}.state{color:var(--green);font-size:9px;letter-spacing:.08em}
+    .stage{position:relative;overflow:hidden;border-radius:8px;min-height:600px;background:#03070a;border:1px solid rgba(116,237,255,.08)}
+    .stage:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,rgba(116,237,255,.10),transparent 40%),linear-gradient(145deg,rgba(0,0,0,.03),rgba(0,0,0,.30));pointer-events:none}
+    .preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) contrast(1.05) brightness(.52);transform:scale(1.02)}
+    .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.72));z-index:1}
+    .center{position:absolute;z-index:2;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;text-align:center}
+    .panel{max-width:680px;padding:30px 34px;border:1px solid rgba(255,255,255,.13);background:rgba(2,7,11,.78);backdrop-filter:blur(14px);border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.45)}
+    .eyebrow{font-size:9px;font-weight:900;letter-spacing:.18em;color:var(--cyan);margin-bottom:12px}.title{font-size:clamp(27px,4vw,46px);font-weight:950;line-height:1.02;letter-spacing:-.045em;margin:0 0 12px}.copy{margin:0 auto 22px;color:#b9c4ca;max-width:560px;font-size:14px;line-height:1.6}
+    .actions{display:flex;justify-content:center;flex-wrap:wrap;gap:9px}.actions a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border-radius:6px;text-decoration:none;font-size:10px;font-weight:900;letter-spacing:.08em;border:1px solid var(--line);color:#d7e2e7;background:rgba(255,255,255,.035)}.actions a.primary{color:#021015;background:var(--cyan);border-color:var(--cyan)}.actions a:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    .meta{display:flex;justify-content:space-between;gap:18px;margin-top:14px;color:var(--muted);font-size:10px;line-height:1.5}.meta span:last-child{text-align:right}
+    #musicBtn{position:fixed;right:16px;top:16px;z-index:80;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}#musicBtn.on{background:linear-gradient(90deg,rgba(116,237,255,.12),rgba(94,240,166,.08));color:#dffcff}
+    @media(max-width:640px){.container{padding:12px}.brand{font-size:16px}.sub{display:none}.card{padding:10px}.stage{min-height:72vh}.panel{padding:24px 18px}.copy{font-size:13px}.meta{flex-direction:column}.meta span:last-child{text-align:left}}
   </style>
 </head>
 <body>
@@ -29,25 +35,24 @@
       <div class="sub">LIVE · EARTH FROM SPACE</div>
     </header>
 
-    <main class="card livestream">
-      <div class="livestream-wrap">
-        <div class="head"><span>LIVE STREAM</span><span class="state">● LIVE</span></div>
-        <div class="iframe-wrap">
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/awQzjn72bI0?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1"
-            title="Earth Observatory live stream"
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <div class="toolbar">
-          <div class="note">Embedded using YouTube's privacy-enhanced no-cookie player. Playback starts muted to maximize compatibility.</div>
-          <div class="actions">
-            <a href="https://www.youtube.com/watch?v=awQzjn72bI0" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE ↗</a>
+    <main class="card">
+      <div class="head"><span>LIVE STREAM</span><span class="state">● STREAM READY</span></div>
+      <section class="stage" aria-label="Live stream access panel">
+        <img class="preview" src="https://i.ytimg.com/vi/awQzjn72bI0/maxresdefault.jpg" alt="Earth Observatory live stream preview">
+        <div class="shade"></div>
+        <div class="center">
+          <div class="panel">
+            <div class="eyebrow">YOUTUBE LIVE</div>
+            <h1 class="title">Open the live Earth feed</h1>
+            <p class="copy">YouTube is currently serving a bot-verification page to embedded playback for this stream. That verification is controlled by YouTube and cannot be bypassed by the website. Use the live player directly for the full stream.</p>
+            <div class="actions">
+              <a class="primary" href="https://www.youtube.com/watch?v=awQzjn72bI0" target="_blank" rel="noopener noreferrer">WATCH LIVE ↗</a>
+              <a href="https://www.youtube.com/live/awQzjn72bI0" target="_blank" rel="noopener noreferrer">OPEN LIVE PAGE ↗</a>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+      <div class="meta"><span>Direct YouTube playback avoids the blocked embedded challenge.</span><span>Earth Observatory · Live from the stream</span></div>
     </main>
   </div>
 
