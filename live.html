@@ -4,55 +4,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<title>Earth Observatory · Stream Output</title>
+<title>Earth Observatory · Live ISS Tracker</title>
 <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.144/Build/Cesium/Widgets/widgets.css">
 <style>
-:root{--white:#f4f8fb;--muted:#91a0aa;--cyan:#74edff;--green:#5ef0a6;--line:rgba(255,255,255,.12);--panel:rgba(2,8,13,.78)}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--white);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-#earth3d{position:fixed;inset:0;background:#000}
-.cinematic{position:fixed;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 28%,rgba(0,0,0,.08) 58%,rgba(0,0,0,.68) 100%)}
-.top{position:fixed;z-index:15;left:0;right:0;top:0;padding:22px 28px;display:flex;justify-content:space-between;align-items:flex-start;text-shadow:0 2px 16px #000}
-.brand{font-size:27px;font-weight:950;letter-spacing:.015em}.sub{margin-top:5px;font:700 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#b5c4ccaa;letter-spacing:.19em}
-.live{display:flex;align-items:center;gap:7px;font:900 9px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:#cfe1e7}.live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);display:block}
-.tag{position:fixed;z-index:15;left:50%;top:26px;transform:translateX(-50%);font:800 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#d5e1e6a8;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
-.corner{position:fixed;z-index:15;font:700 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#b8c7ce99;letter-spacing:.13em;line-height:1.75;text-shadow:0 2px 16px #000}.tr{right:20px;top:90px;text-align:right}.bl{left:20px;bottom:92px}.br{right:20px;bottom:92px;text-align:right}
-.info{position:fixed;z-index:16;left:20px;bottom:18px;right:20px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;pointer-events:none}
-.panel{min-width:260px;padding:12px 15px;border:1px solid var(--line);border-radius:7px;background:var(--panel);backdrop-filter:blur(15px);box-shadow:0 16px 50px #0008}.eyebrow{font:900 8px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.17em;color:var(--cyan);margin-bottom:7px}.hero{font-size:15px;font-weight:900;letter-spacing:-.02em}.mini{margin-top:4px;font:700 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#91a0aa;letter-spacing:.09em}
-.tele{display:flex;gap:18px}.metric .value{font:900 15px ui-monospace,SFMono-Regular,Menlo,monospace}.metric .label{margin-top:3px;font:700 7px ui-monospace,SFMono-Regular,Menlo,monospace;color:#83949e;letter-spacing:.12em}
-.music{position:fixed;z-index:30;right:20px;bottom:18px;width:40px;height:40px;border-radius:20px;border:1px solid var(--line);background:rgba(3,9,15,.82);color:#dce8ec;font-size:17px;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 12px 35px #0008}
-.music.on{color:var(--cyan);border-color:#74edff55}
-.cesium-viewer-bottom,.cesium-viewer-selectionIndicatorContainer,.cesium-viewer-infoBoxContainer{display:none!important}
-@media(max-width:800px){.top{padding:14px 15px}.brand{font-size:19px}.sub{font-size:6px}.tag{top:64px;font-size:6px}.tr{top:92px;right:12px}.bl{left:12px;bottom:72px}.br{right:12px;bottom:72px}.info{left:12px;right:12px;bottom:12px}.panel{min-width:0;padding:9px 11px}.tele{gap:11px}.metric .value,.hero{font-size:12px}.metric .label,.mini{font-size:6px}.music{right:12px;bottom:12px}}
+:root{--white:#f4f8fb;--muted:#91a0aa;--cyan:#74edff;--green:#5ef0a6;--line:rgba(255,255,255,.12);--panel:rgba(2,8,13,.84)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--white);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#earth3d{position:fixed;inset:0}.cinematic{position:fixed;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 30%,rgba(0,0,0,.08) 62%,rgba(0,0,0,.72) 100%)}
+.top{position:fixed;z-index:20;left:0;right:0;top:0;padding:20px 28px;display:flex;justify-content:space-between;align-items:flex-start;text-shadow:0 2px 16px #000}.brand{font-size:25px;font-weight:950;letter-spacing:.01em}.sub{margin-top:4px;font:800 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#aab8c0aa;letter-spacing:.18em}.live{display:flex;align-items:center;gap:7px;font:900 8px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}.live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);animation:pulse 1.5s infinite}
+.tag{position:fixed;z-index:20;left:50%;top:24px;transform:translateX(-50%);font:800 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#d5e1e6aa;letter-spacing:.2em;white-space:nowrap}.tag b{color:var(--cyan)}
+.corner{position:fixed;z-index:15;font:700 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#b8c7ce99;letter-spacing:.13em;line-height:1.75;text-shadow:0 2px 16px #000}.tr{right:20px;top:84px;text-align:right}.bl{left:20px;bottom:86px}.br{right:20px;bottom:86px;text-align:right}
+.card{position:fixed;z-index:18;background:linear-gradient(145deg,rgba(7,16,23,.92),rgba(1,6,11,.76));border:1px solid var(--line);border-radius:8px;backdrop-filter:blur(18px);box-shadow:0 18px 60px rgba(0,0,0,.48)}
+.iss-card{right:18px;top:96px;width:320px;overflow:hidden}.head{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid var(--line);font:900 8px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em}.state{color:var(--green);font-size:7px}
+.iss-photo{height:142px;position:relative;background:#010306;overflow:hidden}.iss-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(.95) contrast(1.04)}.iss-photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.72) 100%);pointer-events:none}.caption{position:absolute;z-index:2;left:11px;right:11px;bottom:9px;display:flex;justify-content:space-between;align-items:end}.caption b{font-size:13px;letter-spacing:-.02em}.caption span{font:800 7px ui-monospace,SFMono-Regular,Menlo,monospace;color:#bdcbd1;letter-spacing:.07em}
+.tele{padding:10px 11px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.metric{padding:9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:5px}.value{font:900 14px ui-monospace,SFMono-Regular,Menlo,monospace}.label{margin-top:4px;font:700 6px ui-monospace,SFMono-Regular,Menlo,monospace;color:#74858e;letter-spacing:.11em}.row{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;gap:8px;font:700 7px ui-monospace,SFMono-Regular,Menlo,monospace;color:#74858e}.row b{color:#d5e0e5}
+.left{left:18px;bottom:115px;width:285px;padding:12px}.eyebrow{font:900 7px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;color:var(--cyan)}.location{margin-top:7px;font-size:16px;font-weight:950;letter-spacing:-.02em}.mini{margin-top:5px;font:800 7px ui-monospace,SFMono-Regular,Menlo,monospace;color:#8798a1;letter-spacing:.08em}
+.controls{position:fixed;z-index:30;right:18px;bottom:114px;display:flex;gap:6px}.controls button{cursor:pointer;border:1px solid var(--line);border-radius:4px;padding:8px 10px;background:rgba(4,12,18,.93);color:#d5e0e5;font:900 7px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em}.controls button.on{color:#021015;background:var(--cyan);border-color:var(--cyan)}
+.bottom{position:fixed;z-index:17;left:0;right:0;bottom:0;height:96px;padding:9px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;background:linear-gradient(180deg,rgba(2,7,11,.10),rgba(2,7,11,.74))}.bottom .card{position:relative;inset:auto;width:auto;height:auto;padding:10px}.big{margin-top:7px;font:900 16px ui-monospace,SFMono-Regular,Menlo,monospace}.small{margin-top:4px;color:#82939d;font:800 6px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+.music{position:fixed;right:18px;bottom:15px;z-index:35;width:40px;height:40px;border-radius:20px;border:1px solid var(--line);background:rgba(4,10,17,.94);color:#dce8ec;font-size:16px;cursor:pointer}.music.on{color:var(--cyan);border-color:#74edff55}
+@keyframes pulse{0%,100%{transform:scale(.9);opacity:.75}50%{transform:scale(1.2);opacity:1}}
+@media(max-width:900px){.top{padding:14px 12px}.brand{font-size:19px}.sub{font-size:6px}.iss-card{right:10px;top:72px;width:270px}.left{left:10px;bottom:105px}.controls{right:10px;bottom:105px}.bottom{left:10px;right:10px;height:84px;padding:7px 0;gap:7px}.tr{right:10px;top:70px}.bl{left:10px;bottom:76px}.br{right:10px;bottom:76px}}
+@media(max-width:620px){.tag{display:none}.iss-card{width:205px}.iss-photo{height:94px}.caption b{font-size:10px}.value{font-size:11px}.tele{padding:7px}.left{width:190px}.controls{max-width:205px;flex-wrap:wrap;justify-content:flex-end;bottom:95px}.bottom{grid-template-columns:1fr 1fr;height:72px}.bottom .card:nth-child(3){display:none}.big{font-size:12px}.tr,.bl,.br{display:none}}
 </style>
 </head>
 <body>
-<div id="earth3d"></div>
-<div class="cinematic"></div>
-<header class="top">
-  <div><div class="brand">EARTH OBSERVATORY</div><div class="sub">LIVE EARTH FROM SPACE · NASA DATA · ORBITAL TELEMETRY</div></div>
-  <div class="live"><i></i> STREAM OUTPUT</div>
-</header>
-<div class="tag">NASA GIBS · ISS / 25544 · SGP4 <span id="mode">AUTO CINEMATIC</span></div>
-<div class="corner tr">UTC <span id="utc">--:--:--</span><br>ALT <span id="alt">---</span><br>VELOCITY <span id="vel">---</span></div>
-<div class="corner bl">NASA EARTH OBSERVATION<br>REAL-TIME ORBIT PROPAGATION</div>
-<div class="corner br">WGS84 · DYNAMIC ATMOSPHERE<br>EARTH CAMERA</div>
-<div class="info">
-  <section class="panel"><div class="eyebrow">CURRENT PASS</div><div class="hero" id="where">ACQUIRING ISS POSITION</div><div class="mini" id="light">—</div></section>
-  <section class="panel"><div class="eyebrow">ORBITAL TELEMETRY</div><div class="tele"><div class="metric"><div class="value" id="alt2">---</div><div class="label">ALT KM</div></div><div class="metric"><div class="value" id="vel2">---</div><div class="label">KM/H</div></div><div class="metric"><div class="value" id="period">---</div><div class="label">ORBIT MIN</div></div></div></section>
-</div>
-<button class="music" id="music" aria-label="Toggle ambient music" title="Toggle ambient music">♫</button>
+<div id="earth3d"></div><div class="cinematic"></div>
+<header class="top"><div><div class="brand">EARTH OBSERVATORY</div><div class="sub">LIVE EARTH FROM SPACE · NASA EARTH DATA · ISS 25544</div></div><div class="live"><i></i> LIVE TELEMETRY</div></header>
+<div class="tag"><b>●</b> ISS TRACK · TLE / SGP4 · NASA GIBS · AUTO CINEMATIC</div>
+<div class="corner tr">UTC <span id="utc">--:--:--</span><br>ISS / 25544</div><div class="corner bl">NASA GIBS · EARTH OBSERVATION</div><div class="corner br">WGS84 · DYNAMIC ATMOSPHERE</div>
+
+<section class="card iss-card">
+  <div class="head"><span>INTERNATIONAL SPACE STATION</span><span class="state" id="liveState">SYNCING</span></div>
+  <div class="iss-photo">
+    <img src="https://assets.science.nasa.gov/dynamicimage/assets/science/astro/universe/2023/09/SpaceStation-1.png?crop=faces%2Cfocalpoint&fit=clip&h=3022&w=5250" alt="NASA illustration of the International Space Station">
+    <div class="caption"><b>ISS · ZARYA</b><span>NORAD 25544</span></div>
+  </div>
+  <div class="tele">
+    <div class="grid">
+      <div class="metric"><div class="value" id="alt">—</div><div class="label">ALTITUDE · KM</div></div>
+      <div class="metric"><div class="value" id="vel">—</div><div class="label">VELOCITY · KM/H</div></div>
+      <div class="metric"><div class="value" id="lat">—</div><div class="label">LATITUDE</div></div>
+      <div class="metric"><div class="value" id="lon">—</div><div class="label">LONGITUDE</div></div>
+    </div>
+    <div class="row"><span>POSITION</span><b id="where">ACQUIRING…</b></div>
+    <div class="row"><span>LIGHTING</span><b id="light">—</b></div>
+  </div>
+</section>
+
+<section class="card left"><div class="eyebrow">CURRENT PASS</div><div class="location" id="where2">ACQUIRING ISS POSITION</div><div class="mini">LIVE SGP4 PROPAGATION · ORBIT PATH UPDATED</div></section>
+<div class="controls"><button id="auto" class="on">AUTO CAMERA</button><button id="follow">FOLLOW ISS</button><button id="reset">RESET</button></div>
+<section class="bottom"><div class="card"><div class="eyebrow">ORBITAL TRACK</div><div class="big">ISS · 25544</div><div class="small">CYAN TRAIL = PREDICTED ORBIT + GROUND TRACK</div></div><div class="card"><div class="eyebrow">NASA DATA</div><div class="big">GIBS EARTH</div><div class="small">EARTH OBSERVATION IMAGERY LAYER</div></div><div class="card"><div class="eyebrow">CAMERA</div><div class="big" id="cameraMode">AUTO CINEMATIC</div><div class="small">SMOOTH LIVE PRESENTATION</div></div></section>
+<button class="music" id="music" aria-label="Toggle ambient music">♫</button>
+
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.144/Build/Cesium/Cesium.js"></script>
 <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
-<script src="tracker.js?v=20260903-live"></script>
-<script src="cesium-earth.js?v=20260903-live"></script>
-<script src="nasa-gibs.js?v=20260903-live"></script>
-<script src="ambient-piano.js?v=20260903-live"></script>
+<script src="tracker.js?v=20260903-2"></script>
+<script src="cesium-earth.js?v=20260903-2"></script>
+<script src="nasa-gibs.js?v=20260903-2"></script>
+<script src="ambient-piano.js?v=20260903-2"></script>
 <script>
 const $=id=>document.getElementById(id);
-function clock(){const d=new Date();$('utc').textContent=d.toISOString().slice(11,19);if($('alt2')&&$('alt'))$('alt2').textContent=$('alt').textContent;if($('vel2')&&$('vel'))$('vel2').textContent=$('vel').textContent}
-clock();setInterval(clock,250);
-$('music').onclick=()=>{const on=window.ISSBackgroundMusic?.toggle?.()||false;$('music').classList.toggle('on',on);$('music').textContent=on?'⏸':'♫'};
+function tick(){const d=new Date();$('utc').textContent=d.toISOString().slice(11,19);if($('light'))$('light').style.color=$('light').textContent==='SUNLIT'?'#5ef0a6':'#74edff';if($('where')&&$('where2'))$('where2').textContent=$('where').textContent}tick();setInterval(tick,500);
+$('auto').onclick=()=>{$('auto').classList.toggle('on',window.toggleEarthAuto?.()??true);$('follow').classList.remove('on');$('cameraMode').textContent=$('auto').classList.contains('on')?'AUTO CINEMATIC':'MANUAL'};
+$('follow').onclick=()=>{$('follow').classList.toggle('on',window.toggleEarthFollow?.()??false);if($('follow').classList.contains('on')){$('auto').classList.remove('on');$('cameraMode').textContent='FOLLOW ISS'}else{$('cameraMode').textContent='AUTO CINEMATIC'}};
+$('reset').onclick=()=>{window.resetEarth?.();$('auto').classList.add('on');$('follow').classList.remove('on');$('cameraMode').textContent='AUTO CINEMATIC'};
+$('music').onclick=()=>{if(window.ISSBackgroundMusic){const on=window.ISSBackgroundMusic.toggle();$('music').classList.toggle('on',on);$('music').textContent=on?'⏸':'♫'}};
 </script>
 </body>
 </html>
