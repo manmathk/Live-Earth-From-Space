@@ -1,76 +1,58 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#02060a">
-  <title>Live Stream · Earth Observatory</title>
-  <style>
-    :root{--white:#f4f8fb;--muted:#91a0aa;--line:rgba(255,255,255,.11);--panel:rgba(3,9,15,.90);--cyan:#74edff;--green:#5ef0a6}
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:#000;color:var(--white);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    body{overflow-x:hidden}
-    .container{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:28px}
-    header{width:100%;max-width:1100px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-    .brand{font-weight:950;font-size:22px;letter-spacing:-.035em}.sub{font-size:8px;letter-spacing:.16em;color:#91a4af}
-    .card{width:100%;max-width:1100px;background:linear-gradient(145deg,rgba(7,16,23,.92),rgba(1,6,11,.78));border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.50)}
-    .head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;font-weight:900;font-size:12px;letter-spacing:.1em}.state{color:var(--green);font-size:9px;letter-spacing:.08em}
-    .stage{position:relative;overflow:hidden;border-radius:8px;min-height:600px;background:#03070a;border:1px solid rgba(116,237,255,.08)}
-    .stage:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,rgba(116,237,255,.10),transparent 40%),linear-gradient(145deg,rgba(0,0,0,.03),rgba(0,0,0,.30));pointer-events:none}
-    .preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) contrast(1.05) brightness(.52);transform:scale(1.02)}
-    .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.72));z-index:1}
-    .center{position:absolute;z-index:2;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;text-align:center}
-    .panel{max-width:680px;padding:30px 34px;border:1px solid rgba(255,255,255,.13);background:rgba(2,7,11,.78);backdrop-filter:blur(14px);border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.45)}
-    .eyebrow{font-size:9px;font-weight:900;letter-spacing:.18em;color:var(--cyan);margin-bottom:12px}.title{font-size:clamp(27px,4vw,46px);font-weight:950;line-height:1.02;letter-spacing:-.045em;margin:0 0 12px}.copy{margin:0 auto 22px;color:#b9c4ca;max-width:560px;font-size:14px;line-height:1.6}
-    .actions{display:flex;justify-content:center;flex-wrap:wrap;gap:9px}.actions a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border-radius:6px;text-decoration:none;font-size:10px;font-weight:900;letter-spacing:.08em;border:1px solid var(--line);color:#d7e2e7;background:rgba(255,255,255,.035)}.actions a.primary{color:#021015;background:var(--cyan);border-color:var(--cyan)}.actions a:hover{filter:brightness(1.08);transform:translateY(-1px)}
-    .meta{display:flex;justify-content:space-between;gap:18px;margin-top:14px;color:var(--muted);font-size:10px;line-height:1.5}.meta span:last-child{text-align:right}
-    #musicBtn{position:fixed;right:16px;top:16px;z-index:80;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}#musicBtn.on{background:linear-gradient(90deg,rgba(116,237,255,.12),rgba(94,240,166,.08));color:#dffcff}
-    @media(max-width:640px){.container{padding:12px}.brand{font-size:16px}.sub{display:none}.card{padding:10px}.stage{min-height:72vh}.panel{padding:24px 18px}.copy{font-size:13px}.meta{flex-direction:column}.meta span:last-child{text-align:left}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Earth Observatory · Stream Output</title>
+<link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.144/Build/Cesium/Widgets/widgets.css">
+<style>
+:root{--white:#f4f8fb;--muted:#91a0aa;--cyan:#74edff;--green:#5ef0a6;--line:rgba(255,255,255,.12);--panel:rgba(2,8,13,.78)}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--white);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#earth3d{position:fixed;inset:0;background:#000}
+.cinematic{position:fixed;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 28%,rgba(0,0,0,.08) 58%,rgba(0,0,0,.68) 100%)}
+.top{position:fixed;z-index:15;left:0;right:0;top:0;padding:22px 28px;display:flex;justify-content:space-between;align-items:flex-start;text-shadow:0 2px 16px #000}
+.brand{font-size:27px;font-weight:950;letter-spacing:.015em}.sub{margin-top:5px;font:700 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#b5c4ccaa;letter-spacing:.19em}
+.live{display:flex;align-items:center;gap:7px;font:900 9px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:#cfe1e7}.live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);display:block}
+.tag{position:fixed;z-index:15;left:50%;top:26px;transform:translateX(-50%);font:800 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#d5e1e6a8;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
+.corner{position:fixed;z-index:15;font:700 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#b8c7ce99;letter-spacing:.13em;line-height:1.75;text-shadow:0 2px 16px #000}.tr{right:20px;top:90px;text-align:right}.bl{left:20px;bottom:92px}.br{right:20px;bottom:92px;text-align:right}
+.info{position:fixed;z-index:16;left:20px;bottom:18px;right:20px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;pointer-events:none}
+.panel{min-width:260px;padding:12px 15px;border:1px solid var(--line);border-radius:7px;background:var(--panel);backdrop-filter:blur(15px);box-shadow:0 16px 50px #0008}.eyebrow{font:900 8px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.17em;color:var(--cyan);margin-bottom:7px}.hero{font-size:15px;font-weight:900;letter-spacing:-.02em}.mini{margin-top:4px;font:700 8px ui-monospace,SFMono-Regular,Menlo,monospace;color:#91a0aa;letter-spacing:.09em}
+.tele{display:flex;gap:18px}.metric .value{font:900 15px ui-monospace,SFMono-Regular,Menlo,monospace}.metric .label{margin-top:3px;font:700 7px ui-monospace,SFMono-Regular,Menlo,monospace;color:#83949e;letter-spacing:.12em}
+.music{position:fixed;z-index:30;right:20px;bottom:18px;width:40px;height:40px;border-radius:20px;border:1px solid var(--line);background:rgba(3,9,15,.82);color:#dce8ec;font-size:17px;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 12px 35px #0008}
+.music.on{color:var(--cyan);border-color:#74edff55}
+.cesium-viewer-bottom,.cesium-viewer-selectionIndicatorContainer,.cesium-viewer-infoBoxContainer{display:none!important}
+@media(max-width:800px){.top{padding:14px 15px}.brand{font-size:19px}.sub{font-size:6px}.tag{top:64px;font-size:6px}.tr{top:92px;right:12px}.bl{left:12px;bottom:72px}.br{right:12px;bottom:72px}.info{left:12px;right:12px;bottom:12px}.panel{min-width:0;padding:9px 11px}.tele{gap:11px}.metric .value,.hero{font-size:12px}.metric .label,.mini{font-size:6px}.music{right:12px;bottom:12px}}
+</style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">EARTH OBSERVATORY</div>
-      <div class="sub">LIVE · EARTH FROM SPACE</div>
-    </header>
-
-    <main class="card">
-      <div class="head"><span>LIVE STREAM</span><span class="state">● STREAM READY</span></div>
-      <section class="stage" aria-label="Live stream access panel">
-        <img class="preview" src="https://i.ytimg.com/vi/awQzjn72bI0/maxresdefault.jpg" alt="Earth Observatory live stream preview">
-        <div class="shade"></div>
-        <div class="center">
-          <div class="panel">
-            <div class="eyebrow">YOUTUBE LIVE</div>
-            <h1 class="title">Open the live Earth feed</h1>
-            <p class="copy">YouTube is currently serving a bot-verification page to embedded playback for this stream. That verification is controlled by YouTube and cannot be bypassed by the website. Use the live player directly for the full stream.</p>
-            <div class="actions">
-              <a class="primary" href="https://www.youtube.com/watch?v=awQzjn72bI0" target="_blank" rel="noopener noreferrer">WATCH LIVE ↗</a>
-              <a href="https://www.youtube.com/live/awQzjn72bI0" target="_blank" rel="noopener noreferrer">OPEN LIVE PAGE ↗</a>
-            </div>
-          </div>
-        </div>
-      </section>
-      <div class="meta"><span>Direct YouTube playback avoids the blocked embedded challenge.</span><span>Earth Observatory · Live from the stream</span></div>
-    </main>
-  </div>
-
-  <button id="musicBtn" aria-label="Toggle background music" title="Toggle background music">♪</button>
-
-  <script src="ambient-piano.js"></script>
-  <script>
-    function updateMusicBtn(){
-      const btn=document.getElementById('musicBtn');
-      if(!btn)return;
-      if(window.ISSBackgroundMusic&&typeof window.ISSBackgroundMusic.isPlaying==='function'){
-        const playing=window.ISSBackgroundMusic.isPlaying();
-        btn.textContent=playing?'⏸':'♪';
-        btn.classList.toggle('on',playing);
-      }
-    }
-    document.getElementById('musicBtn').addEventListener('click',()=>setTimeout(updateMusicBtn,120));
-    window.addEventListener('DOMContentLoaded',()=>setTimeout(updateMusicBtn,200));
-  </script>
+<div id="earth3d"></div>
+<div class="cinematic"></div>
+<header class="top">
+  <div><div class="brand">EARTH OBSERVATORY</div><div class="sub">LIVE EARTH FROM SPACE · NASA DATA · ORBITAL TELEMETRY</div></div>
+  <div class="live"><i></i> STREAM OUTPUT</div>
+</header>
+<div class="tag">NASA GIBS · ISS / 25544 · SGP4 <span id="mode">AUTO CINEMATIC</span></div>
+<div class="corner tr">UTC <span id="utc">--:--:--</span><br>ALT <span id="alt">---</span><br>VELOCITY <span id="vel">---</span></div>
+<div class="corner bl">NASA EARTH OBSERVATION<br>REAL-TIME ORBIT PROPAGATION</div>
+<div class="corner br">WGS84 · DYNAMIC ATMOSPHERE<br>EARTH CAMERA</div>
+<div class="info">
+  <section class="panel"><div class="eyebrow">CURRENT PASS</div><div class="hero" id="where">ACQUIRING ISS POSITION</div><div class="mini" id="light">—</div></section>
+  <section class="panel"><div class="eyebrow">ORBITAL TELEMETRY</div><div class="tele"><div class="metric"><div class="value" id="alt2">---</div><div class="label">ALT KM</div></div><div class="metric"><div class="value" id="vel2">---</div><div class="label">KM/H</div></div><div class="metric"><div class="value" id="period">---</div><div class="label">ORBIT MIN</div></div></div></section>
+</div>
+<button class="music" id="music" aria-label="Toggle ambient music" title="Toggle ambient music">♫</button>
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.144/Build/Cesium/Cesium.js"></script>
+<script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<script src="tracker.js?v=20260903-live"></script>
+<script src="cesium-earth.js?v=20260903-live"></script>
+<script src="nasa-gibs.js?v=20260903-live"></script>
+<script src="ambient-piano.js?v=20260903-live"></script>
+<script>
+const $=id=>document.getElementById(id);
+function clock(){const d=new Date();$('utc').textContent=d.toISOString().slice(11,19);if($('alt2')&&$('alt'))$('alt2').textContent=$('alt').textContent;if($('vel2')&&$('vel'))$('vel2').textContent=$('vel').textContent}
+clock();setInterval(clock,250);
+$('music').onclick=()=>{const on=window.ISSBackgroundMusic?.toggle?.()||false;$('music').classList.toggle('on',on);$('music').textContent=on?'⏸':'♫'};
+</script>
 </body>
 </html>
