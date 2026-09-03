@@ -51,19 +51,64 @@
   const orbitEntity=viewer.entities.add({id:'ISS-ORBIT-PATH',name:'ISS ±55 minute orbit path',polyline:{positions:[],width:2.2,material:new Cesium.PolylineGlowMaterialProperty({glowPower:.2,taperPower:.4,color:Cesium.Color.CYAN.withAlpha(.52)}),clampToGround:false,arcType:Cesium.ArcType.NONE}});
   const groundTrack=viewer.entities.add({id:'ISS-GROUND-TRACK',name:'ISS ground track',polyline:{positions:[],width:1.6,material:Cesium.Color.CYAN.withAlpha(.26),clampToGround:true,arcType:Cesium.ArcType.GEODESIC}});
 
-  let autoOrbit=true,followISS=false,heading=5.08,phase=0,lastManual=0,issLat=0,issLon=0,issAlt=420;
-  const stop=()=>{lastManual=performance.now();autoOrbit=false;document.getElementById('auto')?.classList.remove('on')};
+  let autoOrbit=true,followISS=false,issCamera=false,heading=5.08,phase=0,lastManual=0,issLat=0,issLon=0,issAlt=420;
+  const stop=()=>{lastManual=performance.now();autoOrbit=false;document.getElementById('auto')?.classList.remove('on');document.getElementById('cameraMode')&&(document.getElementById('cameraMode').textContent='MANUAL')};
   viewer.screenSpaceEventHandler.setInputAction(stop,Cesium.ScreenSpaceEventType.LEFT_DOWN);
   viewer.screenSpaceEventHandler.setInputAction(stop,Cesium.ScreenSpaceEventType.WHEEL);
   viewer.screenSpaceEventHandler.setInputAction(stop,Cesium.ScreenSpaceEventType.PINCH_START);
-  window.toggleEarthAuto=()=>{autoOrbit=!autoOrbit;if(autoOrbit)followISS=false;return autoOrbit};
-  window.toggleEarthFollow=()=>{followISS=!followISS;if(followISS)autoOrbit=false;else viewer.camera.lookAt(Cesium.Cartesian3.ZERO,new Cesium.HeadingPitchRange(heading,-.18,9800000));return followISS};
-  window.resetEarth=()=>{autoOrbit=true;followISS=false;heading=5.08;phase=0;viewer.camera.lookAt(Cesium.Cartesian3.ZERO,new Cesium.HeadingPitchRange(heading,-.18,9800000));document.getElementById('auto')?.classList.add('on');document.getElementById('follow')?.classList.remove('on')};
+
+  window.toggleEarthAuto=()=>{autoOrbit=!autoOrbit;if(autoOrbit){followISS=false;issCamera=false;}return autoOrbit};
+  window.toggleEarthFollow=()=>{
+    followISS=!followISS;
+    if(followISS){autoOrbit=false;issCamera=false;}
+    else viewer.camera.lookAt(Cesium.Cartesian3.ZERO,new Cesium.HeadingPitchRange(heading,-.18,9800000));
+    return followISS;
+  };
+
+  function setIssCamera(){
+    if(!issCamera)return;
+    const p=iss.position?.getValue?.(Cesium.JulianDate.now()) || iss.position;
+    if(!p)return;
+    const up=Cesium.Cartesian3.normalize(p,new Cesium.Cartesian3());
+    const enu=Cesium.Transforms.eastNorthUpToFixedFrame(p);
+    const north=Cesium.Matrix4.getColumn(enu,1,new Cesium.Cartesian3());
+    const direction=Cesium.Cartesian3.negate(up,new Cesium.Cartesian3());
+    viewer.camera.setView({
+      destination:p,
+      orientation:{direction,up:north}
+    });
+  }
+
+  window.toggleEarthISSCamera=()=>{
+    issCamera=!issCamera;
+    if(issCamera){
+      autoOrbit=false;
+      followISS=false;
+      setIssCamera();
+      document.getElementById('auto')?.classList.remove('on');
+      document.getElementById('follow')?.classList.remove('on');
+    } else {
+      autoOrbit=true;
+      viewer.camera.lookAt(Cesium.Cartesian3.ZERO,new Cesium.HeadingPitchRange(heading,-.18,9800000));
+    }
+    return issCamera;
+  };
+
+  window.resetEarth=()=>{
+    autoOrbit=true;followISS=false;issCamera=false;heading=5.08;phase=0;
+    viewer.camera.lookAt(Cesium.Cartesian3.ZERO,new Cesium.HeadingPitchRange(heading,-.18,9800000));
+    document.getElementById('auto')?.classList.add('on');
+    document.getElementById('follow')?.classList.remove('on');
+    document.getElementById('issCamera')?.classList.remove('on');
+    document.getElementById('cameraMode')&&(document.getElementById('cameraMode').textContent='AUTO CINEMATIC');
+  };
+
   window.updateISS3D=(lat,lon,altKm)=>{
     issLat=lat;issLon=lon;issAlt=altKm;
     const p=Cesium.Cartesian3.fromDegrees(lon,lat,Math.max(altKm||0,0)*1000);
     iss.position=p;halo.position=p;
     if(followISS)viewer.camera.lookAt(p,new Cesium.HeadingPitchRange(Cesium.Math.toRadians(12),-.08,Math.max(950000,Math.min(1700000,(altKm||420)*2500))));
+    if(issCamera)setIssCamera();
   };
   window.updateOrbitPath=(sat,date)=>{
     if(!sat||!window.satellite)return;
@@ -83,6 +128,10 @@
   viewer.camera.lookAt(Cesium.Cartesian3.ZERO,new Cesium.HeadingPitchRange(heading,-.18,9800000));
   scene.postRender.addEventListener(()=>{
     const now=performance.now();
+    if(issCamera){
+      setIssCamera();
+      return;
+    }
     if(!autoOrbit||followISS||now-lastManual<=250)return;
     phase+=0.00042;
     heading+=0.000020;
