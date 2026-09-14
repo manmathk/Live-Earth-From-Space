@@ -46,26 +46,26 @@
 </footer>
 <button class="music" id="music" type="button" aria-label="Toggle background music" aria-pressed="false" title="Toggle background music">♫</button>
 <div class="error" id="error"><b>NASA Eyes could not be embedded.</b><span>This can happen when the NASA Eyes site or your browser blocks framing. Use “OPEN NASA EYES” above to launch the original interactive view.</span></div>
-<script src="ambient-piano.js?v=20260914-2"></script>
+<script src="ambient-piano.js?v=20260914-3"></script>
 <script>
 const frame=document.getElementById('eyes');
 let loaded=false;
 frame.addEventListener('load',()=>{loaded=true;});
 setTimeout(()=>{if(!loaded)document.getElementById('error').style.display='block';},8000);
-const music=document.getElementById('music');
-function syncMusic(){
-  const playing=!!window.ISSBackgroundMusic?.isPlaying?.();
-  music.textContent=playing?'⏸':'♫';
-  music.classList.toggle('on',playing);
-  music.setAttribute('aria-pressed',playing?'true':'false');
-}
-function toggleMusic(){
-  if(window.ISSBackgroundMusic?.toggle) window.ISSBackgroundMusic.toggle().then?.(syncMusic);
-  setTimeout(syncMusic,180);
-}
-music.addEventListener('click',toggleMusic);
-music.addEventListener('touchend',function(e){e.preventDefault();toggleMusic();},{passive:false});
-window.addEventListener('DOMContentLoaded',()=>setTimeout(syncMusic,200));
+
+// ambient-piano.js owns the music button. Do NOT attach another click/touch
+// handler here: on iOS Safari that would toggle the music twice (ON -> OFF).
+window.addEventListener('DOMContentLoaded',()=>{
+  const music=document.getElementById('music');
+  const sync=()=>{
+    const playing=!!window.ISSBackgroundMusic?.isPlaying?.();
+    music.textContent=playing?'⏸':'♫';
+    music.classList.toggle('on',playing);
+    music.setAttribute('aria-pressed',playing?'true':'false');
+  };
+  sync();
+  setInterval(sync,500);
+});
 </script>
 </body>
 </html>
